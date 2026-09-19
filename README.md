@@ -1,32 +1,32 @@
-# React + TypeScript + Vite
+# The Green · Café & Bar
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Sistema frontend del café-bar **The Green**, con identidad vintage-industrial y consumo completo del Mock API asignado.
 
-Currently, two official plugins are available:
+## Equipo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Luis Miguel Triviño
+- Valentina Diaz Carrillo
 
-## React Compiler
+## Alcance
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+La aplicación parte de un proyecto React + TypeScript + Vite y personaliza header, menú y footer. Desde el menú principal se gestionan todos los recursos del Mock API:
 
-## Expanding the Oxlint configuration
+- Productos
+- Categorías
+- Usuarios
+- Clientes
+- Órdenes
+- Estados de la orden
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Cada vista lista registros en vivo y permite crear o actualizar mediante formularios.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Mock API
+
+Base: `https://6aa6bca3d7765db9850791e4.mockapi.io`
+
+## Cómo correrlo
+
+```bash
+npm install
+npm run dev
 ```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
