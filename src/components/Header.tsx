@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Sesion } from '../auth/sesion'
+import { esPersonal, type Sesion } from '../auth/sesion'
 import { NAV_ITEMS, type ViewId } from '../config/resources'
 
 interface HeaderProps {
@@ -23,6 +23,10 @@ export function Header({
     onCambiarVista(vista)
     setMenuAbierto(false)
   }
+
+  const enlaces = NAV_ITEMS.filter(
+    (item) => !item.soloPersonal || esPersonal(sesion),
+  )
 
   return (
     <header className="site-header">
@@ -51,7 +55,7 @@ export function Header({
         </button>
 
         <nav className={`main-nav${menuAbierto ? ' is-open' : ''}`}>
-          {NAV_ITEMS.map((item) => (
+          {enlaces.map((item) => (
             <button
               key={item.id}
               type="button"
@@ -66,7 +70,10 @@ export function Header({
         <div className="header-actions">
           {sesion ? (
             <>
-              <span className="session-name">{sesion.nombre}</span>
+              <span className="session-name">
+                {sesion.nombre}
+                {esPersonal(sesion) ? ' · personal' : ''}
+              </span>
               <button type="button" className="ghost" onClick={onSalir}>
                 Salir
               </button>

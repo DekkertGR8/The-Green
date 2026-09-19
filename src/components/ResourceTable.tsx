@@ -5,6 +5,8 @@ interface ResourceTableProps {
   resource: ResourceConfig
   registros: ApiRecord[]
   onEditar: (registro: ApiRecord) => void
+  onEliminar: (registro: ApiRecord) => void
+  puedeGestionar: boolean
 }
 
 const METODOS_PAGO: Record<string, string> = {
@@ -43,6 +45,8 @@ export function ResourceTable({
   resource,
   registros,
   onEditar,
+  onEliminar,
+  puedeGestionar,
 }: ResourceTableProps) {
   return (
     <div className="table-wrap">
@@ -52,7 +56,7 @@ export function ResourceTable({
             {resource.listFields.map((campo) => (
               <th key={campo}>{resource.listLabels[campo] ?? campo}</th>
             ))}
-            <th>Acciones</th>
+            {puedeGestionar && <th>Acciones</th>}
           </tr>
         </thead>
         <tbody>
@@ -61,11 +65,20 @@ export function ResourceTable({
               {resource.listFields.map((campo) => (
                 <td key={campo}>{formatearCelda(campo, registro[campo])}</td>
               ))}
-              <td>
-                <button type="button" onClick={() => onEditar(registro)}>
-                  Editar
-                </button>
-              </td>
+              {puedeGestionar && (
+                <td className="table-actions">
+                  <button type="button" onClick={() => onEditar(registro)}>
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() => onEliminar(registro)}
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

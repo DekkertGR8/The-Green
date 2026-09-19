@@ -45,15 +45,23 @@ export interface ResourceConfig {
   layout: 'table' | 'cards'
 }
 
-export const NAV_ITEMS: { id: ViewId; label: string }[] = [
+export const NAV_ITEMS: { id: ViewId; label: string; soloPersonal?: boolean }[] = [
   { id: 'inicio', label: 'Inicio' },
   { id: 'producto', label: 'Productos' },
-  { id: 'categoria', label: 'Categorías' },
-  { id: 'usuario', label: 'Usuarios' },
-  { id: 'cliente', label: 'Clientes' },
-  { id: 'orden', label: 'Órdenes' },
-  { id: 'estado_orden', label: 'Estados' },
+  { id: 'categoria', label: 'Categorías', soloPersonal: true },
+  { id: 'usuario', label: 'Usuarios', soloPersonal: true },
+  { id: 'cliente', label: 'Clientes', soloPersonal: true },
+  { id: 'orden', label: 'Órdenes', soloPersonal: true },
+  { id: 'estado_orden', label: 'Estados', soloPersonal: true },
 ]
+
+export const VISTAS_PERSONAL: ViewId[] = NAV_ITEMS.filter(
+  (item) => item.soloPersonal,
+).map((item) => item.id)
+
+export function vistaRequierePersonal(vista: ViewId) {
+  return VISTAS_PERSONAL.includes(vista)
+}
 
 export const RESOURCES: ResourceConfig[] = [
   {

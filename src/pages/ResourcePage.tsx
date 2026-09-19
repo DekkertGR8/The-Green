@@ -8,15 +8,21 @@ import type { ResourceConfig } from '../config/resources'
 import {
   actualizar,
   crear,
+  eliminar,
   listar,
 } from '../services/resource.service'
 
 interface ResourcePageProps {
   resource: ResourceConfig
   onAgregar?: (producto: ApiRecord) => void
+  puedeGestionar: boolean
 }
 
-export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
+export function ResourcePage({
+  resource,
+  onAgregar,
+  puedeGestionar,
+}: ResourcePageProps) {
   const [registros, setRegistros] = useState<ApiRecord[]>([])
   const [related, setRelated] = useState<Record<string, ApiRecord[]>>({
     categoria: [],
@@ -37,8 +43,8 @@ export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
       const [lista, categorias, clientes, estados] = await Promise.all([
         listar(resource.path),
         listar('categoria'),
-        listar('cliente'),
-        listar('estado_orden'),
+        puedeGestionar ? listar('cliente') : Promise.resolve([]),
+        puedeGestionar ? listar('estado_orden') : Promise.resolve([]),
       ])
       setRegistros(lista)
       setRelated({
@@ -62,21 +68,24 @@ export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
     setEditando(null)
     setMensaje('')
     void cargar()
-  }, [resource.id])
+  }, [resource.id, puedeGestionar])
 
   const abrirCrear = () => {
+    if (!puedeGestionar) return
     setEditando(null)
     setMostrarFormulario(true)
     setMensaje('')
   }
 
   const abrirEditar = (registro: ApiRecord) => {
+    if (!puedeGestionar) return
     setEditando(registro)
     setMostrarFormulario(true)
     setMensaje('')
   }
 
   const guardar = async (datos: Record<string, unknown>) => {
+    if (!puedeGestionar) return
     setEnviando(true)
     setError('')
     try {
@@ -101,12 +110,38 @@ export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
     }
   }
 
+  const borrar = async (registro: ApiRecord) => {
+    if (!puedeGestionar) return
+    const ok = window.confirm(`¿Eliminar este ${resource.singular}?`)
+    if (!ok) return
+    setError('')
+    try {
+      await eliminar(resource.path, registro.id)
+      setMensaje('El registro se eliminó en el Mock API.')
+      if (editando?.id === registro.id) {
+        setMostrarFormulario(false)
+        setEditando(null)
+      }
+      await cargar()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo eliminar el registro.',
+      )
+    }
+  }
+
   return (
     <>
       <Banner
-        eyebrow="Gestión en vivo"
+        eyebrow={puedeGestionar ? 'Gestión en vivo' : 'Carta pública'}
         title={resource.label}
-        subtitle={resource.description}
+        subtitle={
+          puedeGestionar
+            ? resource.description
+            : 'Consulta la carta. Crear, editar o eliminar queda reservado al personal.'
+        }
       />
 
       <section className="toolbar">
@@ -114,16 +149,18 @@ export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
           {registros.length} {registros.length === 1 ? 'registro' : 'registros'}{' '}
           en la API
         </p>
-        <button type="button" onClick={abrirCrear}>
-          {resource.createLabel}
-        </button>
+        {puedeGestionar && (
+          <button type="button" onClick={abrirCrear}>
+            {resource.createLabel}
+          </button>
+        )}
       </section>
 
       {mensaje && <p className="status is-ok">{mensaje}</p>}
       {error && <p className="status is-error">{error}</p>}
       {cargando && <p className="status">Consultando el Mock API...</p>}
 
-      {mostrarFormulario && (
+      {mostrarFormulario && puedeGestionar && (
         <section className="panel form-panel">
           <h2>
             {editando
@@ -145,7 +182,11 @@ export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
       )}
 
       {!cargando && registros.length === 0 && (
-        <p className="status">Aún no hay registros. Crea el primero.</p>
+        <p className="status">
+          {puedeGestionar
+            ? 'Aún no hay registros. Crea el primero.'
+            : 'Aún no hay registros en esta carta.'}
+        </p>
       )}
 
       {resource.layout === 'cards' ? (
@@ -154,7 +195,8 @@ export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
             <ProductCard
               key={producto.id}
               producto={producto}
-              onEditar={abrirEditar}
+              onEditar={puedeGestionar ? abrirEditar : undefined}
+              onEliminar={puedeGestionar ? borrar : undefined}
               onAgregar={onAgregar}
             />
           ))}
@@ -165,6 +207,8 @@ export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
             resource={resource}
             registros={registros}
             onEditar={abrirEditar}
+            onEliminar={borrar}
+            puedeGestionar={puedeGestionar}
           />
         )
       )}

@@ -4,12 +4,14 @@ import imagenFallback from '../assets/hero.png'
 interface ProductCardProps {
   producto: ApiRecord
   onEditar?: (producto: ApiRecord) => void
+  onEliminar?: (producto: ApiRecord) => void
   onAgregar?: (producto: ApiRecord) => void
 }
 
 export function ProductCard({
   producto,
   onEditar,
+  onEliminar,
   onAgregar,
 }: ProductCardProps) {
   const imagen = asString(producto.imagen)
@@ -49,6 +51,15 @@ export function ProductCard({
             {onEditar && (
               <button type="button" className="ghost" onClick={() => onEditar(producto)}>
                 Editar
+              </button>
+            )}
+            {onEliminar && (
+              <button
+                type="button"
+                className="danger"
+                onClick={() => onEliminar(producto)}
+              >
+                Eliminar
               </button>
             )}
           </div>

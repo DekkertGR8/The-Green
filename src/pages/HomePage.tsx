@@ -9,6 +9,7 @@ interface HomePageProps {
   error: string
   onCambiarVista: (vista: ViewId) => void
   onAgregar: (producto: ApiRecord) => void
+  puedeGestionar: boolean
 }
 
 export function HomePage({
@@ -17,6 +18,7 @@ export function HomePage({
   error,
   onCambiarVista,
   onAgregar,
+  puedeGestionar,
 }: HomePageProps) {
   return (
     <>
@@ -37,18 +39,32 @@ export function HomePage({
             local.
           </p>
         </article>
-        <article className="panel">
-          <p className="eyebrow">Operación</p>
-          <h2>Todo el Mock API en un solo menú</h2>
-          <p>
-            Productos, categorías, usuarios, clientes, órdenes y estados de
-            orden se consultan, registran y actualizan en vivo. Cada recurso
-            tiene su propio acceso desde el encabezado.
-          </p>
-          <button type="button" onClick={() => onCambiarVista('producto')}>
-            Abrir la carta
-          </button>
-        </article>
+        {puedeGestionar ? (
+          <article className="panel">
+            <p className="eyebrow">Operación</p>
+            <h2>Gestión reservada al personal</h2>
+            <p>
+              Categorías, usuarios, clientes, órdenes y estados se consultan y
+              modifican solo con una cuenta de empleado. La carta pública sigue
+              visible para los huéspedes.
+            </p>
+            <button type="button" onClick={() => onCambiarVista('usuario')}>
+              Abrir gestión
+            </button>
+          </article>
+        ) : (
+          <article className="panel">
+            <p className="eyebrow">Para huéspedes</p>
+            <h2>Carta y pedido, sin el back office</h2>
+            <p>
+              Puedes recorrer la carta y armar tu orden. La información de
+              personal, clientes y operación de sala queda fuera de esta vista.
+            </p>
+            <button type="button" onClick={() => onCambiarVista('producto')}>
+              Ver la carta
+            </button>
+          </article>
+        )}
       </section>
 
       <section>

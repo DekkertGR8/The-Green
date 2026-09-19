@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { asString, type ApiRecord } from './api/http'
-import { borrarSesion, guardarSesion, leerSesion, type Sesion } from './auth/sesion'
+import {
+  borrarSesion,
+  esPersonal,
+  guardarSesion,
+  leerSesion,
+  type Sesion,
+} from './auth/sesion'
 import {
   guardarCarrito,
   leerCarrito,
@@ -14,7 +20,8 @@ import { ResourcePage } from './pages/ResourcePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegistroPage } from './pages/RegistroPage'
 import { CarritoPage } from './pages/CarritoPage'
-import { getResource, type ViewId } from './config/resources'
+import { AccesoDenegado } from './pages/AccesoDenegado'
+import { getResource, vistaRequierePersonal, type ViewId } from './config/resources'
 import { listarProductos } from './services/product.service'
 import './App.css'
 
@@ -118,6 +125,8 @@ function App() {
             onVaciar={() => actualizarCarrito([])}
             onCambiarVista={setVista}
           />
+        ) : vistaRequierePersonal(vista) && !esPersonal(sesion) ? (
+          <AccesoDenegado onCambiarVista={setVista} />
         ) : vista === 'inicio' || !resource ? (
           <HomePage
             productos={productos}
@@ -125,16 +134,18 @@ function App() {
             error={errorHome}
             onCambiarVista={setVista}
             onAgregar={agregarAlCarrito}
+            puedeGestionar={esPersonal(sesion)}
           />
         ) : (
           <ResourcePage
             key={resource.id}
             resource={resource}
             onAgregar={resource.id === 'producto' ? agregarAlCarrito : undefined}
+            puedeGestionar={esPersonal(sesion)}
           />
         )}
       </main>
-      <Footer onCambiarVista={setVista} />
+      <Footer onCambiarVista={setVista} sesion={sesion} />
     </div>
   )
 }
