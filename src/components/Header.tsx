@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { esPersonal, type Sesion } from '../auth/sesion'
+import { etiquetaRol, puedeVerVista } from '../auth/roles'
+import type { Sesion } from '../auth/sesion'
 import { NAV_ITEMS, type ViewId } from '../config/resources'
 
 interface HeaderProps {
@@ -24,9 +25,8 @@ export function Header({
     setMenuAbierto(false)
   }
 
-  const enlaces = NAV_ITEMS.filter(
-    (item) => !item.soloPersonal || esPersonal(sesion),
-  )
+  const enlaces = NAV_ITEMS.filter((item) => puedeVerVista(item.acceso, sesion))
+  const etiqueta = etiquetaRol(sesion)
 
   return (
     <header className="site-header">
@@ -72,7 +72,7 @@ export function Header({
             <>
               <span className="session-name">
                 {sesion.nombre}
-                {esPersonal(sesion) ? ' · personal' : ''}
+                {etiqueta ? ` · ${etiqueta}` : ''}
               </span>
               <button type="button" className="ghost" onClick={onSalir}>
                 Salir

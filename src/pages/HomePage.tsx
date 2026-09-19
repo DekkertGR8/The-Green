@@ -1,6 +1,8 @@
 import { ProductCard } from '../components/ProductCard'
 import { Banner } from '../components/Banner'
 import type { ApiRecord } from '../api/http'
+import { esAdmin, esPersonal } from '../auth/roles'
+import type { Sesion } from '../auth/sesion'
 import type { ViewId } from '../config/resources'
 
 interface HomePageProps {
@@ -9,7 +11,7 @@ interface HomePageProps {
   error: string
   onCambiarVista: (vista: ViewId) => void
   onAgregar: (producto: ApiRecord) => void
-  puedeGestionar: boolean
+  sesion: Sesion | null
 }
 
 export function HomePage({
@@ -18,14 +20,17 @@ export function HomePage({
   error,
   onCambiarVista,
   onAgregar,
-  puedeGestionar,
+  sesion,
 }: HomePageProps) {
+  const personal = esPersonal(sesion)
+  const admin = esAdmin(sesion)
+
   return (
     <>
       <Banner
         eyebrow="Casa de café · barra de autor"
         title="The Green, donde la noche se sirve despacio"
-        subtitle="Un café-bar de hierro, madera y latón. Carta viva desde Mock API: productos, categorías, huéspedes, personal y el pulso de cada orden."
+        subtitle="Un café-bar de hierro, madera y latón. Carta viva desde Mock API: productos, huéspedes y el pulso de cada orden."
       />
 
       <section className="home-grid">
@@ -35,21 +40,32 @@ export function HomePage({
           <p>
             The Green nace como una sala íntima de Bogotá: lámparas de taller,
             barra de acero y una carta que cruza espresso de especialidad con
-            cócteles clásicos. Este sistema gestiona toda la operación del
-            local.
+            cócteles clásicos.
           </p>
         </article>
-        {puedeGestionar ? (
+        {admin ? (
           <article className="panel">
-            <p className="eyebrow">Operación</p>
-            <h2>Gestión reservada al personal</h2>
+            <p className="eyebrow">Administración</p>
+            <h2>Tú creas al personal</h2>
             <p>
-              Categorías, usuarios, clientes, órdenes y estados se consultan y
-              modifican solo con una cuenta de empleado. La carta pública sigue
-              visible para los huéspedes.
+              Desde Usuarios das de alta empleados. Ellos gestionan clientes y
+              órdenes. Categorías y estados de orden también quedan en esta
+              cuenta.
             </p>
             <button type="button" onClick={() => onCambiarVista('usuario')}>
-              Abrir gestión
+              Crear empleados
+            </button>
+          </article>
+        ) : personal ? (
+          <article className="panel">
+            <p className="eyebrow">Sala y barra</p>
+            <h2>Clientes y órdenes a tu cargo</h2>
+            <p>
+              Puedes crear, actualizar y eliminar huéspedes y pedidos. La
+              administración de usuarios queda en el admin.
+            </p>
+            <button type="button" onClick={() => onCambiarVista('orden')}>
+              Ver órdenes
             </button>
           </article>
         ) : (
@@ -57,8 +73,8 @@ export function HomePage({
             <p className="eyebrow">Para huéspedes</p>
             <h2>Carta y pedido, sin el back office</h2>
             <p>
-              Puedes recorrer la carta y armar tu orden. La información de
-              personal, clientes y operación de sala queda fuera de esta vista.
+              Recorre la carta y arma tu orden. La operación de sala y las
+              cuentas de personal no se muestran aquí.
             </p>
             <button type="button" onClick={() => onCambiarVista('producto')}>
               Ver la carta

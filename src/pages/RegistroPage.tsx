@@ -1,20 +1,12 @@
 import { useState, type FormEvent } from 'react'
-import { asString, crearRecurso, listarRecurso } from '../api/http'
+import { registrarCliente } from '../auth/auth.service'
 import { Banner } from '../components/Banner'
-import { sesionDesdeUsuario, type Sesion } from '../auth/sesion'
+import type { Sesion } from '../auth/sesion'
 import type { ViewId } from '../config/resources'
 
 interface RegistroPageProps {
   onSesion: (sesion: Sesion) => void
   onCambiarVista: (vista: ViewId) => void
-}
-
-function partirNombre(nombre: string) {
-  const partes = nombre.trim().split(/\s+/)
-  return {
-    nombre: partes[0] || nombre,
-    apellido: partes.slice(1).join(' ') || 'Casa',
-  }
 }
 
 export function RegistroPage({ onSesion, onCambiarVista }: RegistroPageProps) {
@@ -29,40 +21,16 @@ export function RegistroPage({ onSesion, onCambiarVista }: RegistroPageProps) {
     evento.preventDefault()
     setError('')
     setEnviando(true)
-    const correoLimpio = correo.trim().toLowerCase()
-
     try {
-      const usuarios = await listarRecurso('usuario')
-      const existe = usuarios.some(
-        (usuario) => asString(usuario.correo).toLowerCase() === correoLimpio,
-      )
-      if (existe) {
-        setError('Ese correo ya tiene una cuenta.')
-        return
-      }
-
-      const usuario = await crearRecurso('usuario', {
-        nombre: nombre.trim(),
-        correo: correoLimpio,
-        clave,
-        rol: 'cliente',
-        estado: true,
-      })
-
-      const partes = partirNombre(nombre)
-      await crearRecurso('cliente', {
-        nombre: partes.nombre,
-        apellido: partes.apellido,
-        correo: correoLimpio,
-        telefono: telefono.trim() || '0000000000',
-        direccion: 'The Green',
-        estado: true,
-      })
-
-      onSesion(sesionDesdeUsuario(usuario))
+      const sesion = await registrarCliente({ nombre, correo, clave, telefono })
+      onSesion(sesion)
       onCambiarVista('inicio')
-    } catch {
-      setError('No se pudo crear la cuenta. Inténtalo de nuevo.')
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo crear la cuenta. Inténtalo de nuevo.',
+      )
     } finally {
       setEnviando(false)
     }
@@ -72,8 +40,8 @@ export function RegistroPage({ onSesion, onCambiarVista }: RegistroPageProps) {
     <>
       <Banner
         eyebrow="Cuenta"
-        title="Crear cuenta"
-        subtitle="El registro guarda un usuario y un cliente en el Mock API."
+        title="Crear cuenta de cliente"
+        subtitle="El registro abre una cuenta de huésped. Las cuentas de empleados las crea el administrador."
       />
       <section className="panel form-panel">
         <form className="resource-form" onSubmit={handleSubmit}>

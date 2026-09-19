@@ -1,4 +1,5 @@
-import { esPersonal, type Sesion } from '../auth/sesion'
+import { esPersonal, puedeVerVista } from '../auth/roles'
+import type { Sesion } from '../auth/sesion'
 import { NAV_ITEMS, type ViewId } from '../config/resources'
 
 interface FooterProps {
@@ -22,9 +23,7 @@ export function Footer({ onCambiarVista, sesion }: FooterProps) {
           <h3>{esPersonal(sesion) ? 'Carta y gestión' : 'La carta'}</h3>
           <ul>
             {NAV_ITEMS.filter(
-              (item) =>
-                item.id !== 'inicio' &&
-                (!item.soloPersonal || esPersonal(sesion)),
+              (item) => item.id !== 'inicio' && puedeVerVista(item.acceso, sesion),
             ).map((item) => (
               <li key={item.id}>
                 <button type="button" onClick={() => onCambiarVista(item.id)}>

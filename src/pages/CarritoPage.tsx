@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { asMoney, crearRecurso } from '../api/http'
+import { asMoney } from '../api/http'
+import { crearOrden } from '../services/order.service'
 import { Banner } from '../components/Banner'
 import type { Sesion } from '../auth/sesion'
 import { totalPrecio, type CartItem } from '../cart/carrito'
@@ -41,7 +42,7 @@ export function CarritoPage({
       const detalle = items.map(
         (item) => `${item.nombre} x${item.cantidad}`,
       )
-      await crearRecurso('orden', {
+      await crearOrden({
         cliente: sesion.nombre,
         fecha: new Date().toISOString().slice(0, 10),
         metodo_pago: 'Efectivo',

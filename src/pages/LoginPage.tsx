@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { asString, listarRecurso } from '../api/http'
+import { autenticar } from '../auth/auth.service'
 import { Banner } from '../components/Banner'
-import { sesionDesdeUsuario, type Sesion } from '../auth/sesion'
+import type { Sesion } from '../auth/sesion'
 import type { ViewId } from '../config/resources'
 
 interface LoginPageProps {
@@ -20,21 +20,15 @@ export function LoginPage({ onSesion, onCambiarVista }: LoginPageProps) {
     setError('')
     setEnviando(true)
     try {
-      const usuarios = await listarRecurso('usuario')
-      const encontrado = usuarios.find((usuario) => {
-        return (
-          asString(usuario.correo).toLowerCase() === correo.trim().toLowerCase() &&
-          asString(usuario.clave) === clave
-        )
-      })
-      if (!encontrado) {
-        setError('Correo o clave incorrectos.')
-        return
-      }
-      onSesion(sesionDesdeUsuario(encontrado))
+      const sesion = await autenticar(correo, clave)
+      onSesion(sesion)
       onCambiarVista('inicio')
-    } catch {
-      setError('No se pudo iniciar sesión. Revisa la conexión con la API.')
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No se pudo iniciar sesión. Revisa la conexión con la API.',
+      )
     } finally {
       setEnviando(false)
     }
@@ -45,7 +39,7 @@ export function LoginPage({ onSesion, onCambiarVista }: LoginPageProps) {
       <Banner
         eyebrow="Cuenta"
         title="Entrar a The Green"
-        subtitle="Usa el correo y la clave de tu usuario en el Mock API."
+        subtitle="Clientes se registran solos. El administrador crea las cuentas de empleados."
       />
       <section className="panel form-panel">
         <form className="resource-form" onSubmit={handleSubmit}>

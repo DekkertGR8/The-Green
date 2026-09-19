@@ -1,3 +1,6 @@
+import type { AccesoVista } from '../auth/roles'
+import { ROL_ADMIN, ROLES_EMPLEADO } from '../auth/roles'
+
 export type ViewId =
   | 'inicio'
   | 'producto'
@@ -45,22 +48,18 @@ export interface ResourceConfig {
   layout: 'table' | 'cards'
 }
 
-export const NAV_ITEMS: { id: ViewId; label: string; soloPersonal?: boolean }[] = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'producto', label: 'Productos' },
-  { id: 'categoria', label: 'Categorías', soloPersonal: true },
-  { id: 'usuario', label: 'Usuarios', soloPersonal: true },
-  { id: 'cliente', label: 'Clientes', soloPersonal: true },
-  { id: 'orden', label: 'Órdenes', soloPersonal: true },
-  { id: 'estado_orden', label: 'Estados', soloPersonal: true },
+export const NAV_ITEMS: { id: ViewId; label: string; acceso: AccesoVista }[] = [
+  { id: 'inicio', label: 'Inicio', acceso: 'publico' },
+  { id: 'producto', label: 'Productos', acceso: 'publico' },
+  { id: 'cliente', label: 'Clientes', acceso: 'empleado' },
+  { id: 'orden', label: 'Órdenes', acceso: 'empleado' },
+  { id: 'categoria', label: 'Categorías', acceso: 'admin' },
+  { id: 'usuario', label: 'Usuarios', acceso: 'admin' },
+  { id: 'estado_orden', label: 'Estados', acceso: 'admin' },
 ]
 
-export const VISTAS_PERSONAL: ViewId[] = NAV_ITEMS.filter(
-  (item) => item.soloPersonal,
-).map((item) => item.id)
-
-export function vistaRequierePersonal(vista: ViewId) {
-  return VISTAS_PERSONAL.includes(vista)
+export function accesoDeVista(vista: ViewId): AccesoVista {
+  return NAV_ITEMS.find((item) => item.id === vista)?.acceso ?? 'publico'
 }
 
 export const RESOURCES: ResourceConfig[] = [
@@ -136,8 +135,8 @@ export const RESOURCES: ResourceConfig[] = [
     path: 'usuario',
     label: 'Usuarios',
     singular: 'usuario',
-    createLabel: 'Nuevo usuario',
-    description: 'Personal de sala, barra y administración.',
+    createLabel: 'Nuevo empleado',
+    description: 'Solo el administrador crea y edita cuentas de personal.',
     layout: 'table',
     listFields: ['nombre', 'rol', 'correo', 'estado'],
     listLabels: {
@@ -155,7 +154,7 @@ export const RESOURCES: ResourceConfig[] = [
         label: 'Rol',
         type: 'select',
         required: true,
-        options: ['administrador', 'chef', 'bartender', 'barista', 'cajero', 'mesero', 'cliente'],
+        options: [ROL_ADMIN, ...ROLES_EMPLEADO],
       },
       { key: 'estado', label: 'Activo', type: 'checkbox' },
     ],
@@ -166,7 +165,7 @@ export const RESOURCES: ResourceConfig[] = [
     label: 'Clientes',
     singular: 'cliente',
     createLabel: 'Nuevo cliente',
-    description: 'Huéspedes frecuentes de la casa.',
+    description: 'Huéspedes de la casa. El personal puede crearlos, editarlos o darlos de baja.',
     layout: 'table',
     listFields: ['nombre', 'apellido', 'correo', 'telefono', 'estado'],
     listLabels: {
@@ -191,7 +190,7 @@ export const RESOURCES: ResourceConfig[] = [
     label: 'Órdenes',
     singular: 'orden',
     createLabel: 'Nueva orden',
-    description: 'Pedidos de mesa y barra con su estado de servicio.',
+    description: 'Pedidos de mesa y barra. El personal crea, actualiza y elimina órdenes.',
     layout: 'table',
     listFields: ['cliente', 'fecha', 'metodo_pago', 'total', 'estado_orden'],
     listLabels: {

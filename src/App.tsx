@@ -1,18 +1,7 @@
 import { useEffect, useState } from 'react'
-import { asString, type ApiRecord } from './api/http'
-import {
-  borrarSesion,
-  esPersonal,
-  guardarSesion,
-  leerSesion,
-  type Sesion,
-} from './auth/sesion'
-import {
-  guardarCarrito,
-  leerCarrito,
-  totalUnidades,
-  type CartItem,
-} from './cart/carrito'
+import { type ApiRecord } from './api/http'
+import { puedeGestionarRecurso, puedeVerVista } from './auth/roles'
+import { borrarSesion, guardarSesion, leerSesion, type Sesion } from './auth/sesion'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { HomePage } from './pages/HomePage'
@@ -21,7 +10,8 @@ import { LoginPage } from './pages/LoginPage'
 import { RegistroPage } from './pages/RegistroPage'
 import { CarritoPage } from './pages/CarritoPage'
 import { AccesoDenegado } from './pages/AccesoDenegado'
-import { getResource, vistaRequierePersonal, type ViewId } from './config/resources'
+import { accesoDeVista, getResource, type ViewId } from './config/resources'
+import { useCarrito } from './hooks/useCarrito'
 import { listarProductos } from './services/product.service'
 import './App.css'
 
@@ -31,7 +21,7 @@ function App() {
   const [cargandoHome, setCargandoHome] = useState(true)
   const [errorHome, setErrorHome] = useState('')
   const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
-  const [carrito, setCarrito] = useState<CartItem[]>(() => leerCarrito())
+  const { carrito, agregarAlCarrito, cambiarCantidad, quitar, vaciar } = useCarrito()
 
   useEffect(() => {
     const cargarHome = async () => {
@@ -39,7 +29,9 @@ function App() {
       setErrorHome('')
       try {
         const lista = await listarProductos()
-        setProductos(lista)
+        setProductos(
+          lista.filter((item) => item.estado !== false && item.estado !== 'false'),
+        )
       } catch {
         setErrorHome('No se pudo cargar la carta inicial.')
       } finally {
@@ -49,45 +41,6 @@ function App() {
 
     void cargarHome()
   }, [])
-
-  const actualizarCarrito = (items: CartItem[]) => {
-    setCarrito(items)
-    guardarCarrito(items)
-  }
-
-  const agregarAlCarrito = (producto: ApiRecord) => {
-    const id = producto.id
-    const precio = Number(producto.precio) || 0
-    const existe = carrito.find((item) => item.id === id)
-    if (existe) {
-      actualizarCarrito(
-        carrito.map((item) =>
-          item.id === id ? { ...item, cantidad: item.cantidad + 1 } : item,
-        ),
-      )
-      return
-    }
-    actualizarCarrito([
-      ...carrito,
-      {
-        id,
-        nombre: asString(producto.nombre),
-        precio,
-        imagen: asString(producto.imagen),
-        cantidad: 1,
-      },
-    ])
-  }
-
-  const cambiarCantidad = (id: string, cantidad: number) => {
-    if (cantidad < 1) {
-      actualizarCarrito(carrito.filter((item) => item.id !== id))
-      return
-    }
-    actualizarCarrito(
-      carrito.map((item) => (item.id === id ? { ...item, cantidad } : item)),
-    )
-  }
 
   const iniciarSesion = (siguiente: Sesion) => {
     guardarSesion(siguiente)
@@ -101,6 +54,7 @@ function App() {
   }
 
   const resource = getResource(vista)
+  const vistaPermitida = puedeVerVista(accesoDeVista(vista), sesion)
 
   return (
     <div className="app-shell">
@@ -109,7 +63,7 @@ function App() {
         onCambiarVista={setVista}
         sesion={sesion}
         onSalir={salir}
-        unidadesCarrito={totalUnidades(carrito)}
+        unidadesCarrito={carrito.reduce((acc, item) => acc + item.cantidad, 0)}
       />
       <main className="app-main">
         {vista === 'login' ? (
@@ -121,12 +75,15 @@ function App() {
             items={carrito}
             sesion={sesion}
             onCambiarCantidad={cambiarCantidad}
-            onQuitar={(id) => actualizarCarrito(carrito.filter((item) => item.id !== id))}
-            onVaciar={() => actualizarCarrito([])}
+            onQuitar={quitar}
+            onVaciar={vaciar}
             onCambiarVista={setVista}
           />
-        ) : vistaRequierePersonal(vista) && !esPersonal(sesion) ? (
-          <AccesoDenegado onCambiarVista={setVista} />
+        ) : !vistaPermitida ? (
+          <AccesoDenegado
+            onCambiarVista={setVista}
+            requiereAdmin={accesoDeVista(vista) === 'admin'}
+          />
         ) : vista === 'inicio' || !resource ? (
           <HomePage
             productos={productos}
@@ -134,14 +91,15 @@ function App() {
             error={errorHome}
             onCambiarVista={setVista}
             onAgregar={agregarAlCarrito}
-            puedeGestionar={esPersonal(sesion)}
+            sesion={sesion}
           />
         ) : (
           <ResourcePage
             key={resource.id}
             resource={resource}
+            sesion={sesion}
             onAgregar={resource.id === 'producto' ? agregarAlCarrito : undefined}
-            puedeGestionar={esPersonal(sesion)}
+            puedeGestionar={puedeGestionarRecurso(resource.id, sesion)}
           />
         )}
       </main>

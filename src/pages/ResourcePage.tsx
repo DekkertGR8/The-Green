@@ -1,136 +1,48 @@
-import { useEffect, useState } from 'react'
 import type { ApiRecord } from '../api/http'
+import { payloadUsuarioEmpleado } from '../auth/auth.service'
+import type { Sesion } from '../auth/sesion'
 import { Banner } from '../components/Banner'
 import { ProductCard } from '../components/ProductCard'
 import { ResourceForm } from '../components/ResourceForm'
 import { ResourceTable } from '../components/ResourceTable'
 import type { ResourceConfig } from '../config/resources'
-import {
-  actualizar,
-  crear,
-  eliminar,
-  listar,
-} from '../services/resource.service'
+import { useRecurso } from '../hooks/useRecurso'
 
 interface ResourcePageProps {
   resource: ResourceConfig
-  onAgregar?: (producto: ApiRecord) => void
+  sesion: Sesion | null
   puedeGestionar: boolean
+  onAgregar?: (producto: ApiRecord) => void
 }
 
 export function ResourcePage({
   resource,
-  onAgregar,
+  sesion,
   puedeGestionar,
+  onAgregar,
 }: ResourcePageProps) {
-  const [registros, setRegistros] = useState<ApiRecord[]>([])
-  const [related, setRelated] = useState<Record<string, ApiRecord[]>>({
-    categoria: [],
-    cliente: [],
-    estado_orden: [],
-  })
-  const [cargando, setCargando] = useState(true)
-  const [error, setError] = useState('')
-  const [mensaje, setMensaje] = useState('')
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
-  const [editando, setEditando] = useState<ApiRecord | null>(null)
-  const [enviando, setEnviando] = useState(false)
+  const {
+    registros,
+    related,
+    cargando,
+    error,
+    mensaje,
+    mostrarFormulario,
+    editando,
+    enviando,
+    abrirCrear,
+    abrirEditar,
+    cerrarFormulario,
+    guardar,
+    borrar,
+  } = useRecurso(resource, puedeGestionar)
 
-  const cargar = async () => {
-    setCargando(true)
-    setError('')
-    try {
-      const [lista, categorias, clientes, estados] = await Promise.all([
-        listar(resource.path),
-        listar('categoria'),
-        puedeGestionar ? listar('cliente') : Promise.resolve([]),
-        puedeGestionar ? listar('estado_orden') : Promise.resolve([]),
-      ])
-      setRegistros(lista)
-      setRelated({
-        categoria: categorias,
-        cliente: clientes,
-        estado_orden: estados,
-      })
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'No se pudieron cargar los registros.',
-      )
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  useEffect(() => {
-    setMostrarFormulario(false)
-    setEditando(null)
-    setMensaje('')
-    void cargar()
-  }, [resource.id, puedeGestionar])
-
-  const abrirCrear = () => {
-    if (!puedeGestionar) return
-    setEditando(null)
-    setMostrarFormulario(true)
-    setMensaje('')
-  }
-
-  const abrirEditar = (registro: ApiRecord) => {
-    if (!puedeGestionar) return
-    setEditando(registro)
-    setMostrarFormulario(true)
-    setMensaje('')
-  }
-
-  const guardar = async (datos: Record<string, unknown>) => {
-    if (!puedeGestionar) return
-    setEnviando(true)
-    setError('')
-    try {
-      if (editando) {
-        await actualizar(resource.path, editando.id, datos)
-        setMensaje(`El registro se actualizó en el Mock API.`)
-      } else {
-        await crear(resource.path, datos)
-        setMensaje(`El registro se creó en el Mock API.`)
-      }
-      setMostrarFormulario(false)
-      setEditando(null)
-      await cargar()
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'No se pudo guardar el registro.',
-      )
-    } finally {
-      setEnviando(false)
-    }
-  }
-
-  const borrar = async (registro: ApiRecord) => {
-    if (!puedeGestionar) return
-    const ok = window.confirm(`¿Eliminar este ${resource.singular}?`)
-    if (!ok) return
-    setError('')
-    try {
-      await eliminar(resource.path, registro.id)
-      setMensaje('El registro se eliminó en el Mock API.')
-      if (editando?.id === registro.id) {
-        setMostrarFormulario(false)
-        setEditando(null)
-      }
-      await cargar()
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'No se pudo eliminar el registro.',
-      )
-    }
-  }
+  const visibles =
+    resource.id === 'producto'
+      ? puedeGestionar
+        ? registros
+        : registros.filter((item) => item.estado !== false && item.estado !== 'false')
+      : registros
 
   return (
     <>
@@ -146,8 +58,8 @@ export function ResourcePage({
 
       <section className="toolbar">
         <p>
-          {registros.length} {registros.length === 1 ? 'registro' : 'registros'}{' '}
-          en la API
+          {visibles.length} {visibles.length === 1 ? 'registro' : 'registros'}{' '}
+          {puedeGestionar ? 'en la API' : 'en la carta'}
         </p>
         {puedeGestionar && (
           <button type="button" onClick={abrirCrear}>
@@ -167,21 +79,29 @@ export function ResourcePage({
               ? `Actualizar ${resource.singular}`
               : `Registrar ${resource.singular}`}
           </h2>
+          {resource.id === 'usuario' && (
+            <p className="status">
+              {sesion?.nombre} crea la cuenta. El empleado podrá gestionar
+              clientes y órdenes al entrar.
+            </p>
+          )}
           <ResourceForm
             resource={resource}
             initial={editando}
             related={related}
             submitting={enviando}
-            onSubmit={guardar}
-            onCancel={() => {
-              setMostrarFormulario(false)
-              setEditando(null)
-            }}
+            onSubmit={(datos) =>
+              guardar(
+                datos,
+                resource.id === 'usuario' ? payloadUsuarioEmpleado : undefined,
+              )
+            }
+            onCancel={cerrarFormulario}
           />
         </section>
       )}
 
-      {!cargando && registros.length === 0 && (
+      {!cargando && visibles.length === 0 && (
         <p className="status">
           {puedeGestionar
             ? 'Aún no hay registros. Crea el primero.'
@@ -191,7 +111,7 @@ export function ResourcePage({
 
       {resource.layout === 'cards' ? (
         <div className="product-grid">
-          {registros.map((producto) => (
+          {visibles.map((producto) => (
             <ProductCard
               key={producto.id}
               producto={producto}
@@ -202,10 +122,10 @@ export function ResourcePage({
           ))}
         </div>
       ) : (
-        registros.length > 0 && (
+        visibles.length > 0 && (
           <ResourceTable
             resource={resource}
-            registros={registros}
+            registros={visibles}
             onEditar={abrirEditar}
             onEliminar={borrar}
             puedeGestionar={puedeGestionar}
