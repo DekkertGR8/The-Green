@@ -1,4 +1,5 @@
 import { asString, type ApiRecord } from '../api/http'
+import imagenFallback from '../assets/hero.png'
 
 interface ProductCardProps {
   producto: ApiRecord
@@ -22,7 +23,17 @@ export function ProductCard({ producto, onEditar }: ProductCardProps) {
       <div className="product-media">
         {categoria && <span className="product-tag">{categoria}</span>}
         {imagen ? (
-          <img src={imagen} alt={nombre} loading="lazy" />
+          <img
+            src={imagen}
+            alt={nombre}
+            loading="lazy"
+            onError={(evento) => {
+              evento.currentTarget.onerror = null
+              evento.currentTarget.src = imagenFallback
+            }}
+          />
+        ) : imagenFallback ? (
+          <img src={imagenFallback} alt={nombre} loading="lazy" />
         ) : (
           <div className="product-fallback">TG</div>
         )}

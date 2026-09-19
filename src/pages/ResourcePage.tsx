@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
-import {
-  actualizarRecurso,
-  crearRecurso,
-  listarRecurso,
-  type ApiRecord,
-} from '../api/http'
+import type { ApiRecord } from '../api/http'
 import { Banner } from '../components/Banner'
 import { ProductCard } from '../components/ProductCard'
 import { ResourceForm } from '../components/ResourceForm'
 import { ResourceTable } from '../components/ResourceTable'
 import type { ResourceConfig } from '../config/resources'
+import {
+  actualizar,
+  crear,
+  listar,
+} from '../services/resource.service'
 
 interface ResourcePageProps {
   resource: ResourceConfig
@@ -34,10 +34,10 @@ export function ResourcePage({ resource }: ResourcePageProps) {
     setError('')
     try {
       const [lista, categorias, clientes, estados] = await Promise.all([
-        listarRecurso(resource.path),
-        listarRecurso('categoria'),
-        listarRecurso('cliente'),
-        listarRecurso('estado_orden'),
+        listar(resource.path),
+        listar('categoria'),
+        listar('cliente'),
+        listar('estado_orden'),
       ])
       setRegistros(lista)
       setRelated({
@@ -80,10 +80,10 @@ export function ResourcePage({ resource }: ResourcePageProps) {
     setError('')
     try {
       if (editando) {
-        await actualizarRecurso(resource.path, editando.id, datos)
+        await actualizar(resource.path, editando.id, datos)
         setMensaje(`El registro se actualizó en el Mock API.`)
       } else {
-        await crearRecurso(resource.path, datos)
+        await crear(resource.path, datos)
         setMensaje(`El registro se creó en el Mock API.`)
       }
       setMostrarFormulario(false)

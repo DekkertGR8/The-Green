@@ -7,9 +7,31 @@ interface ResourceTableProps {
   onEditar: (registro: ApiRecord) => void
 }
 
+const METODOS_PAGO: Record<string, string> = {
+  'metodo_pago 6': 'Transferencia',
+  'metodo_pago 7': 'Efectivo',
+}
+
+const ESTADOS_ORDEN: Record<string, string> = {
+  'estado_orden 6': 'Pendiente',
+  'estado_orden 7': 'En preparacion',
+}
+
+function formatearMetodoPago(valor: unknown) {
+  const texto = asString(valor)
+  return METODOS_PAGO[texto.toLowerCase()] ?? texto
+}
+
+function formatearEstadoOrden(valor: unknown) {
+  const texto = asString(valor)
+  return ESTADOS_ORDEN[texto.toLowerCase()] ?? texto
+}
+
 function formatearCelda(clave: string, valor: unknown) {
   if (clave === 'clave') return '••••••'
   if (clave === 'estado') return asBoolean(valor) ? 'Activo' : 'Inactivo'
+  if (clave === 'metodo_pago') return formatearMetodoPago(valor) || '—'
+  if (clave === 'estado_orden') return formatearEstadoOrden(valor) || '—'
   if (clave === 'precio' || clave === 'total' || clave === 'descuento') {
     const numero = Number(valor)
     if (!Number.isNaN(numero)) return `$ ${numero.toLocaleString('es-CO')}`

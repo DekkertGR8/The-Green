@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { listarRecurso, type ApiRecord } from './api/http'
+import { type ApiRecord } from './api/http'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { HomePage } from './pages/HomePage'
 import { ResourcePage } from './pages/ResourcePage'
 import { getResource, type ViewId } from './config/resources'
+import { listarProductos } from './services/product.service'
 import './App.css'
 
 function App() {
@@ -18,7 +19,7 @@ function App() {
       setCargandoHome(true)
       setErrorHome('')
       try {
-        const lista = await listarRecurso('producto')
+        const lista = await listarProductos()
         setProductos(lista)
       } catch {
         setErrorHome('No se pudo cargar la carta inicial.')
