@@ -1,0 +1,48 @@
+{
+  "producto": [
+    "Espresso House",
+    "Cappuccino Vintage",
+    "Cold Brew de Barril",
+    "Americano de Casa",
+    "Flat White de Casa",
+    "Latte de Avellana",
+    "Affogato The Green",
+    "Negroni de la Casa",
+    "Old Fashioned",
+    "Espresso Martini",
+    "Whisky Sour Ahumado",
+    "Gin Tonic Botanico",
+    "Manhattan de la Barra",
+    "Copa de Malbec",
+    "Copa de Sauvignon",
+    "Vermut de Casa",
+    "Copa de Whisky",
+    "Tabla de quesos",
+    "Croissant de jamon",
+    "Tostada de aguacate",
+    "Papas rusticas",
+    "Sandwich roast beef",
+    "Brownie de cacao",
+    "Cheesecake de cafe",
+    "Tiramisu de la Casa",
+    "Galleta de chocolate"
+  ],
+  "usuario": [
+    { "nombre": "Luis Miguel Trivino", "rol": "administrador" },
+    { "nombre": "Valentina Diaz Carrillo", "rol": "bartender" },
+    { "nombre": "Helena Duarte", "rol": "chef" },
+    { "nombre": "Tomas Rivera", "rol": "barista" },
+    { "nombre": "Andres Pena", "rol": "cajero" },
+    { "nombre": "Mariana Lopez", "rol": "mesero" }
+  ],
+  "cliente": [
+    "Ana Restrepo",
+    "Carlos Mejia",
+    "Laura Gomez",
+    "Sofia Herrera",
+    "Mateo Rincon",
+    "Juliana Vargas",
+    "Diego Salazar",
+    "Camila Torres"
+  ]
+}
