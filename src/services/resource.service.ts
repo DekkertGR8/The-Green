@@ -1,6 +1,7 @@
 import {
   actualizarRecurso,
   crearRecurso,
+  eliminarRecurso,
   listarRecurso,
   type ApiRecord,
 } from '../api/http'
@@ -19,6 +20,10 @@ export function actualizar(
   datos: Record<string, unknown>,
 ) {
   return actualizarRecurso(recurso, id, datos)
+}
+
+export function eliminar(recurso: string, id: string) {
+  return eliminarRecurso(recurso, id)
 }
 
 export type { ApiRecord }

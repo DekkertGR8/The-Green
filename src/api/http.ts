@@ -15,7 +15,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(`La API respondió ${respuesta.status} en ${path}`)
   }
 
-  return respuesta.json() as Promise<T>
+  const texto = await respuesta.text()
+  if (!texto) return {} as T
+  return JSON.parse(texto) as T
 }
 
 export function listarRecurso(recurso: string) {
@@ -37,6 +39,12 @@ export function actualizarRecurso(
   return request<ApiRecord>(`/${recurso}/${id}`, {
     method: 'PUT',
     body: JSON.stringify(datos),
+  })
+}
+
+export function eliminarRecurso(recurso: string, id: string) {
+  return request<ApiRecord>(`/${recurso}/${id}`, {
+    method: 'DELETE',
   })
 }
 
