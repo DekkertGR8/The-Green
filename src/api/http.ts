@@ -49,3 +49,9 @@ export function asString(valor: unknown): string {
 export function asBoolean(valor: unknown): boolean {
   return valor === true || valor === 'true'
 }
+
+export function asMoney(valor: unknown) {
+  const numero = Number(valor)
+  if (Number.isNaN(numero)) return asString(valor)
+  return `$ ${numero.toLocaleString('es-CO')}`
+}

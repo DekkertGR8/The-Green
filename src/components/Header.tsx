@@ -1,12 +1,22 @@
 import { useState } from 'react'
+import type { Sesion } from '../auth/sesion'
 import { NAV_ITEMS, type ViewId } from '../config/resources'
 
 interface HeaderProps {
   vistaActiva: ViewId
   onCambiarVista: (vista: ViewId) => void
+  sesion: Sesion | null
+  onSalir: () => void
+  unidadesCarrito: number
 }
 
-export function Header({ vistaActiva, onCambiarVista }: HeaderProps) {
+export function Header({
+  vistaActiva,
+  onCambiarVista,
+  sesion,
+  onSalir,
+  unidadesCarrito,
+}: HeaderProps) {
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   const irA = (vista: ViewId) => {
@@ -52,6 +62,44 @@ export function Header({ vistaActiva, onCambiarVista }: HeaderProps) {
             </button>
           ))}
         </nav>
+
+        <div className="header-actions">
+          {sesion ? (
+            <>
+              <span className="session-name">{sesion.nombre}</span>
+              <button type="button" className="ghost" onClick={onSalir}>
+                Salir
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`nav-link${vistaActiva === 'login' ? ' is-active' : ''}`}
+                onClick={() => irA('login')}
+              >
+                Entrar
+              </button>
+              <button
+                type="button"
+                className={`nav-link${vistaActiva === 'registro' ? ' is-active' : ''}`}
+                onClick={() => irA('registro')}
+              >
+                Registro
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            className={`cart-button${vistaActiva === 'carrito' ? ' is-active' : ''}`}
+            onClick={() => irA('carrito')}
+          >
+            Carrito
+            {unidadesCarrito > 0 && (
+              <span className="cart-badge">{unidadesCarrito}</span>
+            )}
+          </button>
+        </div>
       </div>
     </header>
   )

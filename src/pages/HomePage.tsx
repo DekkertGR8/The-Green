@@ -8,6 +8,7 @@ interface HomePageProps {
   cargando: boolean
   error: string
   onCambiarVista: (vista: ViewId) => void
+  onAgregar: (producto: ApiRecord) => void
 }
 
 export function HomePage({
@@ -15,6 +16,7 @@ export function HomePage({
   cargando,
   error,
   onCambiarVista,
+  onAgregar,
 }: HomePageProps) {
   return (
     <>
@@ -65,7 +67,11 @@ export function HomePage({
 
         <div className="product-grid">
           {productos.slice(0, 4).map((producto) => (
-            <ProductCard key={producto.id} producto={producto} />
+            <ProductCard
+              key={producto.id}
+              producto={producto}
+              onAgregar={onAgregar}
+            />
           ))}
         </div>
       </section>

@@ -1,18 +1,17 @@
-import { asString, type ApiRecord } from '../api/http'
+import { asMoney, asString, type ApiRecord } from '../api/http'
 import imagenFallback from '../assets/hero.png'
 
 interface ProductCardProps {
   producto: ApiRecord
   onEditar?: (producto: ApiRecord) => void
+  onAgregar?: (producto: ApiRecord) => void
 }
 
-function formatearPrecio(valor: unknown) {
-  const numero = Number(valor)
-  if (Number.isNaN(numero)) return asString(valor)
-  return `$ ${numero.toLocaleString('es-CO')}`
-}
-
-export function ProductCard({ producto, onEditar }: ProductCardProps) {
+export function ProductCard({
+  producto,
+  onEditar,
+  onAgregar,
+}: ProductCardProps) {
   const imagen = asString(producto.imagen)
   const nombre = asString(producto.nombre)
   const descripcion = asString(producto.descripcion)
@@ -32,22 +31,27 @@ export function ProductCard({ producto, onEditar }: ProductCardProps) {
               evento.currentTarget.src = imagenFallback
             }}
           />
-        ) : imagenFallback ? (
-          <img src={imagenFallback} alt={nombre} loading="lazy" />
         ) : (
-          <div className="product-fallback">TG</div>
+          <img src={imagenFallback} alt={nombre} loading="lazy" />
         )}
       </div>
       <div className="product-body">
         <h3>{nombre}</h3>
         <p>{descripcion}</p>
         <div className="product-meta">
-          <strong>{formatearPrecio(producto.precio)}</strong>
-          {onEditar && (
-            <button type="button" onClick={() => onEditar(producto)}>
-              Editar
-            </button>
-          )}
+          <strong>{asMoney(producto.precio)}</strong>
+          <div className="product-actions">
+            {onAgregar && (
+              <button type="button" onClick={() => onAgregar(producto)}>
+                Pedir
+              </button>
+            )}
+            {onEditar && (
+              <button type="button" className="ghost" onClick={() => onEditar(producto)}>
+                Editar
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </article>

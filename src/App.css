@@ -95,6 +95,58 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.session-name {
+  font-family: var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  color: var(--brass-bright);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cart-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--forest);
+  border: 1px solid var(--brass);
+  color: var(--brass-bright);
+  font-family: var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+}
+
+.cart-button.is-active,
+.nav-link.is-active {
+  background: var(--forest);
+  border-color: var(--brass);
+  color: var(--brass-bright);
+}
+
+.cart-badge {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--brass);
+  color: #16110d;
+  font-size: 0.72rem;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
 }
 
 .nav-link,
@@ -255,6 +307,56 @@
   gap: 10px;
 }
 
+.product-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cart-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cart-row {
+  display: grid;
+  grid-template-columns: 72px 1fr auto auto auto;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.cart-row img,
+.cart-fallback {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  background: #111;
+}
+
+.cart-fallback {
+  display: grid;
+  place-items: center;
+  color: var(--brass);
+  font-family: var(--sans);
+}
+
+.cart-qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  font-size: 1.2rem;
+}
+
 .status {
   border: 1px dashed var(--line);
   padding: 12px 14px;
@@ -403,7 +505,8 @@
 
   .home-grid,
   .form-grid,
-  .footer-inner {
+  .footer-inner,
+  .cart-row {
     grid-template-columns: 1fr;
   }
 

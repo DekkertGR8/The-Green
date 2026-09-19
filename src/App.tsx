@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react'
-import { type ApiRecord } from './api/http'
+import { asString, type ApiRecord } from './api/http'
+import { borrarSesion, guardarSesion, leerSesion, type Sesion } from './auth/sesion'
+import {
+  guardarCarrito,
+  leerCarrito,
+  totalUnidades,
+  type CartItem,
+} from './cart/carrito'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { HomePage } from './pages/HomePage'
 import { ResourcePage } from './pages/ResourcePage'
+import { LoginPage } from './pages/LoginPage'
+import { RegistroPage } from './pages/RegistroPage'
+import { CarritoPage } from './pages/CarritoPage'
 import { getResource, type ViewId } from './config/resources'
 import { listarProductos } from './services/product.service'
 import './App.css'
@@ -13,6 +23,8 @@ function App() {
   const [productos, setProductos] = useState<ApiRecord[]>([])
   const [cargandoHome, setCargandoHome] = useState(true)
   const [errorHome, setErrorHome] = useState('')
+  const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
+  const [carrito, setCarrito] = useState<CartItem[]>(() => leerCarrito())
 
   useEffect(() => {
     const cargarHome = async () => {
@@ -31,21 +43,95 @@ function App() {
     void cargarHome()
   }, [])
 
+  const actualizarCarrito = (items: CartItem[]) => {
+    setCarrito(items)
+    guardarCarrito(items)
+  }
+
+  const agregarAlCarrito = (producto: ApiRecord) => {
+    const id = producto.id
+    const precio = Number(producto.precio) || 0
+    const existe = carrito.find((item) => item.id === id)
+    if (existe) {
+      actualizarCarrito(
+        carrito.map((item) =>
+          item.id === id ? { ...item, cantidad: item.cantidad + 1 } : item,
+        ),
+      )
+      return
+    }
+    actualizarCarrito([
+      ...carrito,
+      {
+        id,
+        nombre: asString(producto.nombre),
+        precio,
+        imagen: asString(producto.imagen),
+        cantidad: 1,
+      },
+    ])
+  }
+
+  const cambiarCantidad = (id: string, cantidad: number) => {
+    if (cantidad < 1) {
+      actualizarCarrito(carrito.filter((item) => item.id !== id))
+      return
+    }
+    actualizarCarrito(
+      carrito.map((item) => (item.id === id ? { ...item, cantidad } : item)),
+    )
+  }
+
+  const iniciarSesion = (siguiente: Sesion) => {
+    guardarSesion(siguiente)
+    setSesion(siguiente)
+  }
+
+  const salir = () => {
+    borrarSesion()
+    setSesion(null)
+    setVista('inicio')
+  }
+
   const resource = getResource(vista)
 
   return (
     <div className="app-shell">
-      <Header vistaActiva={vista} onCambiarVista={setVista} />
+      <Header
+        vistaActiva={vista}
+        onCambiarVista={setVista}
+        sesion={sesion}
+        onSalir={salir}
+        unidadesCarrito={totalUnidades(carrito)}
+      />
       <main className="app-main">
-        {vista === 'inicio' || !resource ? (
+        {vista === 'login' ? (
+          <LoginPage onSesion={iniciarSesion} onCambiarVista={setVista} />
+        ) : vista === 'registro' ? (
+          <RegistroPage onSesion={iniciarSesion} onCambiarVista={setVista} />
+        ) : vista === 'carrito' ? (
+          <CarritoPage
+            items={carrito}
+            sesion={sesion}
+            onCambiarCantidad={cambiarCantidad}
+            onQuitar={(id) => actualizarCarrito(carrito.filter((item) => item.id !== id))}
+            onVaciar={() => actualizarCarrito([])}
+            onCambiarVista={setVista}
+          />
+        ) : vista === 'inicio' || !resource ? (
           <HomePage
             productos={productos}
             cargando={cargandoHome}
             error={errorHome}
             onCambiarVista={setVista}
+            onAgregar={agregarAlCarrito}
           />
         ) : (
-          <ResourcePage key={resource.id} resource={resource} />
+          <ResourcePage
+            key={resource.id}
+            resource={resource}
+            onAgregar={resource.id === 'producto' ? agregarAlCarrito : undefined}
+          />
         )}
       </main>
       <Footer onCambiarVista={setVista} />

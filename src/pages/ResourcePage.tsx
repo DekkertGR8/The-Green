@@ -13,9 +13,10 @@ import {
 
 interface ResourcePageProps {
   resource: ResourceConfig
+  onAgregar?: (producto: ApiRecord) => void
 }
 
-export function ResourcePage({ resource }: ResourcePageProps) {
+export function ResourcePage({ resource, onAgregar }: ResourcePageProps) {
   const [registros, setRegistros] = useState<ApiRecord[]>([])
   const [related, setRelated] = useState<Record<string, ApiRecord[]>>({
     categoria: [],
@@ -154,6 +155,7 @@ export function ResourcePage({ resource }: ResourcePageProps) {
               key={producto.id}
               producto={producto}
               onEditar={abrirEditar}
+              onAgregar={onAgregar}
             />
           ))}
         </div>

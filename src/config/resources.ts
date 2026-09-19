@@ -6,6 +6,9 @@ export type ViewId =
   | 'cliente'
   | 'orden'
   | 'estado_orden'
+  | 'login'
+  | 'registro'
+  | 'carrito'
 
 export type FieldType =
   | 'text'
@@ -144,7 +147,7 @@ export const RESOURCES: ResourceConfig[] = [
         label: 'Rol',
         type: 'select',
         required: true,
-        options: ['administrador', 'chef', 'bartender', 'barista', 'cajero', 'mesero'],
+        options: ['administrador', 'chef', 'bartender', 'barista', 'cajero', 'mesero', 'cliente'],
       },
       { key: 'estado', label: 'Activo', type: 'checkbox' },
     ],
