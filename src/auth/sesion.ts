@@ -37,9 +37,3 @@ export function sesionDesdeUsuario(usuario: ApiRecord): Sesion {
     rol: asString(usuario.rol) || 'cliente',
   }
 }
-
-export function esPersonal(sesion: Sesion | null): boolean {
-  if (!sesion) return false
-  const rol = sesion.rol.trim().toLowerCase()
-  return rol !== '' && rol !== 'cliente'
-}
