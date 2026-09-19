@@ -144,7 +144,7 @@ export const RESOURCES: ResourceConfig[] = [
         label: 'Rol',
         type: 'select',
         required: true,
-        options: ['administrador', 'bartender', 'barista', 'cajero', 'mesero'],
+        options: ['administrador', 'chef', 'bartender', 'barista', 'cajero', 'mesero'],
       },
       { key: 'estado', label: 'Activo', type: 'checkbox' },
     ],
